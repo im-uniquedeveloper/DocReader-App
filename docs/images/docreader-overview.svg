@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="440" viewBox="0 0 1200 440" role="img" aria-labelledby="title desc">
+  <title id="title">DocReader project overview</title>
+  <desc id="desc">A blue and white document reader illustration for PDF, Word, and Excel files.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f7faff"/>
+      <stop offset="1" stop-color="#e9f1ff"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="150%">
+      <feDropShadow dx="0" dy="9" stdDeviation="12" flood-color="#174a91" flood-opacity=".12"/>
+    </filter>
+  </defs>
+  <rect width="1200" height="440" rx="32" fill="url(#bg)"/>
+  <circle cx="1070" cy="52" r="125" fill="#dce9ff" opacity=".72"/>
+  <circle cx="1012" cy="408" r="146" fill="#dce9ff" opacity=".55"/>
+
+  <g transform="translate(74 67)">
+    <rect width="90" height="90" rx="25" fill="#174a91"/>
+    <path d="M27 18h26l16 16v39H27z" fill="#fff"/>
+    <path d="M52 21v15h14" fill="none" stroke="#174a91" stroke-width="4" stroke-linejoin="round"/>
+    <path d="M36 48h24M36 59h20" stroke="#174a91" stroke-width="4" stroke-linecap="round"/>
+  </g>
+
+  <text x="190" y="112" fill="#132b4d" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="48" font-weight="700">DocReader</text>
+  <text x="192" y="153" fill="#61738d" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="20" letter-spacing="1">PDF  •  WORD  •  EXCEL</text>
+  <text x="76" y="250" fill="#17375f" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="31" font-weight="600">Your documents, one place.</text>
+  <text x="76" y="293" fill="#526985" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="19">A native Android reader for the files you work with every day.</text>
+
+  <g filter="url(#shadow)">
+    <rect x="76" y="337" width="168" height="52" rx="16" fill="#174a91"/>
+    <path d="M99 352h11l5 5h11v18H99z" fill="none" stroke="#fff" stroke-width="2.5" stroke-linejoin="round"/>
+    <text x="140" y="370" fill="#fff" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="16" font-weight="600">Open a document</text>
+  </g>
+
+  <g filter="url(#shadow)">
+    <rect x="670" y="70" width="208" height="268" rx="24" fill="#fff"/>
+    <rect x="699" y="101" width="74" height="93" rx="12" fill="#fff1f1"/>
+    <path d="M722 121h25l12 12v43h-37z" fill="#d93a45"/>
+    <path d="M747 121v13h12" fill="none" stroke="#fff" stroke-width="3"/>
+    <text x="708" y="216" fill="#9f2832" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="16" font-weight="700">PDF</text>
+    <rect x="779" y="101" width="74" height="93" rx="12" fill="#edf4ff"/>
+    <path d="M802 121h25l12 12v43h-37z" fill="#2875c7"/>
+    <path d="M827 121v13h12" fill="none" stroke="#fff" stroke-width="3"/>
+    <text x="787" y="216" fill="#1d5fa7" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="16" font-weight="700">DOCX</text>
+    <rect x="699" y="237" width="74" height="74" rx="12" fill="#ebf8ef"/>
+    <path d="M722 251h25l12 12v34h-37z" fill="#22834b"/>
+    <path d="M747 251v13h12" fill="none" stroke="#fff" stroke-width="3"/>
+    <text x="708" y="302" fill="#17673a" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="15" font-weight="700">XLSX</text>
+    <rect x="779" y="237" width="74" height="74" rx="12" fill="#f3f6fb"/>
+    <path d="M799 252h34M799 264h34M799 276h34M799 288h34M810 250v41M822 250v41" stroke="#9aa9bc" stroke-width="2"/>
+  </g>
+
+  <g transform="translate(923 125)">
+    <path d="M-17 0h72" stroke="#9bb4d7" stroke-width="3" stroke-linecap="round" stroke-dasharray="2 9"/>
+    <circle cx="84" cy="0" r="46" fill="#174a91"/>
+    <path d="M65 -24h23l15 15v42H65z" fill="#fff"/>
+    <path d="M87 -22v14h14" fill="none" stroke="#174a91" stroke-width="3"/>
+    <path d="M74 4h20M74 14h17" stroke="#174a91" stroke-width="3" stroke-linecap="round"/>
+    <text x="38" y="78" fill="#17375f" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="15" font-weight="600">Read • Share • Save</text>
+  </g>
+
+  <text x="76" y="418" fill="#6a7e99" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="13">OFFLINE BY DESIGN  ·  NATIVE ANDROID</text>
+</svg>

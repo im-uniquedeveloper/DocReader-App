@@ -1,97 +1,140 @@
 # DocReader
 
-DocReader is an offline native Android app for opening PDF, DOCX, and XLSX files.
-It uses Android's Storage Access Framework for file selection and saving; it does
-not request broad storage access or network access.
+![DocReader project illustration showing PDF, DOCX, and XLSX documents](docs/images/docreader-overview.svg)
+
+**DocReader** is an offline native Android app for opening and reading PDF, Word
+(`.docx`), and Excel (`.xlsx`) documents. It uses Jetpack Compose for the app UI,
+Android's Storage Access Framework for document access, and format-specific
+viewers for rendering.
+
+> The image above is a project illustration, not an in-app screenshot. The app
+> does not currently include a captured emulator screenshot in this repository.
 
 ## Features
 
-- **PDF:** PDFium rendering, fit-to-width startup, continuous vertical scrolling,
-  pinch zoom, password entry for encrypted PDFs, page counters, Share, and Download.
-- **DOCX:** continuous WebView rendering with document formatting and embedded
-  images, scrolling, Share, Export to PDF, and Download.
-- **XLSX:** worksheet tabs, cell formatting, merged cells, frozen panes, cached
-  formula results, bounded row/column/cell parsing, scrolling, pinch zoom, Share,
-  Export to PDF, and Download.
-- **Recent documents:** persisted URI history, ordered by last opened, with recovery
-  when a file is missing or its access grant has expired.
-- **Appearance:** Light, Dark, and System Default modes, saved across app restarts.
-- **Open With:** PDF, DOCX, and XLSX document intents are declared in the manifest.
+| Format | Viewer | Available actions |
+| --- | --- | --- |
+| PDF | PDFium, continuous vertical pages, fit-to-width startup, pinch zoom, page counter, and password prompt for encrypted files | Share, save the original file |
+| DOCX | WebView with the bundled `docx-preview` renderer, document formatting, and embedded image support | Share, export the rendered document to PDF, save the original file |
+| XLSX | Bounded OOXML parser, sheet tabs, formatted grid, merged cells, frozen panes, and saved formula values | Share, export the rendered sheets to PDF, save the original file |
 
-Downloads copy the original document bytes to the location selected in Android's
-Save As picker. DOCX and XLSX PDF exports render the content shown by this app, so
-their output can differ from Microsoft Word or Excel. The app explains format
-limitations before export.
+Other app features:
 
-## Known limitations
+- Open files from the Android system picker or from another app's **Open with** flow.
+- Reopen recent documents using persisted URI access grants, with recovery when a
+  file is moved, deleted, or its access is revoked.
+- Choose **Light**, **Dark**, or **System Default** appearance; the selection is
+  saved across app restarts.
+- Use Android's **Save As** picker to download the original PDF, DOCX, or XLSX
+  bytes without converting the document.
+- Export DOCX and XLSX views to PDF. Exported layout follows DocReader's renderer
+  and may differ from Microsoft Word or Excel.
+- Use the blue-and-white adaptive launcher icon, including a monochrome layer for
+  supported themed icons.
 
-- DOCX pagination and conversion use the bundled `docx-preview` renderer and may
-  differ from Microsoft Word. Some advanced Word features such as text boxes,
-  SmartArt, tracked changes, footnotes, comments, and embedded fonts may be absent
-  or rendered differently. Vertical table cell merges are not honored.
-- XLSX formulas are not recalculated; the workbook's saved cached values are shown.
-  Charts, pivot tables, images, macros, external links, data validation, and
-  conditional formatting are not rendered. Parsing is capped at a 100 MB input,
-  100,000 rows, 512 columns, and 300,000 populated cells per sheet.
-- The alternative Android `PdfRenderer` backend remains in source for development
-  comparison, but PDFium is the app's default and the Home Screen has no engine
-  selector.
-- No emulator or physical-device result is implied by this README. See the audit
-  report for the current verification record.
+DocReader supports `.xlsx`, not legacy `.xls`. It does not request broad storage
+or network permissions.
 
-## Requirements
+## How the app is organized
 
-The build configuration currently targets the Android SDK installed on the
-maintainer's machine:
+```mermaid
+flowchart LR
+    User[User] --> Home[Compose home screen]
+    Picker[Android file picker] --> Router[MainActivity document router]
+    OpenWith[Android Open with] --> Router
+    Home --> Picker
+    Router --> PDF[PDF viewer\nPDFium + Compose Canvas]
+    Router --> DOCX[DOCX viewer\nWebView + docx-preview]
+    Router --> XLSX[XLSX viewer\nBounded OOXML parser + Canvas]
+    Router <--> Recent[Persisted recent URI history]
+    Home <--> Theme[Light / Dark / System setting]
+    PDF --> Actions[Share or save original]
+    DOCX --> Actions
+    XLSX --> Actions
+    DOCX --> Export[Export view to PDF]
+    XLSX --> Export
+```
 
-| Tool | Configured version |
-|---|---|
+### Main source areas
+
+| Path | Responsibility |
+| --- | --- |
+| `app/src/main/java/com/underrated/docreader/MainActivity.kt` | SAF and Open with entry points, routing, and document lifecycle |
+| `app/src/main/java/com/underrated/docreader/ui/OpenScreen.kt`, `RecentDocuments.kt`, `Theme.kt` | Home screen, recent files, and persisted appearance setting |
+| `app/src/main/java/com/underrated/docreader/ui/ViewerScreen.kt`, `app/src/main/java/com/underrated/docreader/viewer/` | PDF viewer UI, page layout, gestures, and render scheduling |
+| `app/src/main/java/com/underrated/docreader/pdf/` | PDFium and Android `PdfRenderer` implementations |
+| `app/src/main/java/com/underrated/docreader/docx/`, `app/src/main/assets/docx/` | DOCX WebView bridge and bundled preview scripts |
+| `app/src/main/java/com/underrated/docreader/xlsx/` | XLSX parser, canvas grid, formatting, and PDF output |
+| `app/src/main/java/com/underrated/docreader/export/DocumentExport.kt` | Sharing, original-file Save As, and export pipeline |
+
+The DOCX preview libraries are bundled in the app and loaded locally; document
+rendering does not fetch scripts or other resources from the network.
+
+## Build
+
+### Requirements
+
+The checked-in Gradle wrapper and Android plugin use this project configuration:
+
+| Tool | Version |
+| --- | --- |
 | JDK | 21 |
 | Gradle wrapper | 9.9.1 |
 | Android Gradle Plugin | 9.5.1 |
 | Kotlin | 2.4.21 |
-| Compile SDK | 37 |
-| Build Tools | 36.0.0 |
-| Minimum SDK | 24 |
-| Target SDK | 36 |
+| Android compile SDK | 37 |
+| Android build tools | 36.0.0 |
+| Minimum Android version | API 24 |
+| Target Android version | API 36 |
 
-Install the configured Android SDK platforms and build tools, then set the local
-SDK path in `local.properties` (that file is machine-specific and ignored by Git).
+Install the required Android SDK platforms and build tools. Set `sdk.dir` in a
+local `local.properties` file; this machine-specific file is ignored by Git.
 
-## Build and checks
+### Build and checks
 
-On Windows:
+Windows PowerShell:
 
 ```powershell
 .\gradlew.bat :app:assembleDebug :app:lintDebug :app:testDebugUnitTest
 ```
 
-On macOS or Linux:
+macOS or Linux:
 
 ```bash
 ./gradlew :app:assembleDebug :app:lintDebug :app:testDebugUnitTest
 ```
 
-Debug APKs are generated under `app/build/outputs/apk/debug/`; Gradle creates
-per-ABI APKs and a universal APK. The arm64 installable APK is named
-`app-arm64-v8a-debug.apk`.
+Per-ABI and universal debug APKs are written to
+`app/build/outputs/apk/debug/`. The ARM64 APK is
+`app/build/outputs/apk/debug/app-arm64-v8a-debug.apk`.
 
-## Architecture
+There are currently no unit or instrumentation test sources in the project, so
+the unit-test task reports `NO-SOURCE` until tests are added.
 
-```text
-MainActivity.kt             SAF opening, routing, document lifecycle
-ui/OpenScreen.kt            Home Screen, recent list, appearance settings
-ui/ViewerScreen.kt           PDF toolbar and PDF viewer container
-ui/DocxScreen.kt             DOCX WebView, teardown, export actions
-ui/XlsxScreen.kt             XLSX tabs, grid, export actions
-ui/DocumentActions.kt        Share, Save As, and export menus
-ui/Theme.kt                  Persisted Material 3 light/dark theme
-viewer/PdfViewerState.kt     PDF layout, zoom, scrolling, render scheduling
-viewer/PdfCanvas.kt          PDF canvas and pinch gesture handling
-pdf/                         PDFium and platform renderer implementations
-xlsx/                        Bounded OOXML parser, canvas renderer, PDF output
-export/DocumentExport.kt     SAF copying, sharing, and DOCX/PDF export pipeline
-```
+## Rendering notes and limitations
 
-The DOCX preview scripts are bundled locally in `app/src/main/assets/docx/` and
-loaded without network access.
+- PDFium is the default PDF engine. Double-tap zoom is disabled; pinch zoom is
+  available. Password entry is supported by PDFium for encrypted PDFs.
+- DOCX pagination is produced by `docx-preview` and can differ from Microsoft
+  Word. Some advanced Word features, including text boxes, SmartArt, tracked
+  changes, footnotes, comments, embedded fonts, and vertical table cell merges,
+  may be missing or rendered differently.
+- XLSX formulas are not recalculated; the workbook's saved cached values are
+  displayed. Charts, pivot tables, images, macros, external links, data
+  validation, and conditional formatting are not rendered.
+- XLSX parsing has bounds for input size, expanded ZIP content, rows, columns,
+  cells, sheets, and XML-backed collections to limit resource use. Current
+  limits include a 100 MB input, 256 MiB total expanded ZIP content, 64 MiB per
+  ZIP part, 20,000 archive entries, 100,000 rows, 512 columns, and 300,000
+  populated cells per sheet.
+- Exported PDFs reflect the content supported by DocReader's DOCX or XLSX
+  renderer; they are not full-fidelity replacements for Office exports.
+- The Android `PdfRenderer` implementation remains in source as an alternate
+  backend; the app currently uses PDFium by default and has no engine selector.
+
+## License and third-party components
+
+The DOCX preview scripts are bundled under `app/src/main/assets/docx/`. Refer to
+their accompanying license notices and upstream project terms when distributing
+the app. The Android application source is provided in this repository; no
+separate project license file is currently included.
