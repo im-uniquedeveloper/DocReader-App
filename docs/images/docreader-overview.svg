@@ -42,12 +42,12 @@
     <path d="M802 121h25l12 12v43h-37z" fill="#2875c7"/>
     <path d="M827 121v13h12" fill="none" stroke="#fff" stroke-width="3"/>
     <text x="787" y="216" fill="#1d5fa7" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="16" font-weight="700">DOCX</text>
-    <rect x="699" y="237" width="74" height="74" rx="12" fill="#ebf8ef"/>
-    <path d="M722 251h25l12 12v34h-37z" fill="#22834b"/>
-    <path d="M747 251v13h12" fill="none" stroke="#fff" stroke-width="3"/>
-    <text x="708" y="302" fill="#17673a" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="15" font-weight="700">XLSX</text>
-    <rect x="779" y="237" width="74" height="74" rx="12" fill="#f3f6fb"/>
-    <path d="M799 252h34M799 264h34M799 276h34M799 288h34M810 250v41M822 250v41" stroke="#9aa9bc" stroke-width="2"/>
+    <rect x="699" y="237" width="74" height="50" rx="12" fill="#ebf8ef"/>
+    <path d="M722 243h25l12 12v25h-37z" fill="#22834b"/>
+    <path d="M747 243v13h12" fill="none" stroke="#fff" stroke-width="3"/>
+    <text x="708" y="310" fill="#17673a" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="15" font-weight="700">XLSX</text>
+    <rect x="779" y="237" width="74" height="50" rx="12" fill="#f3f6fb"/>
+    <path d="M799 248h34M799 257h34M799 266h34M799 275h34M810 245v31M822 245v31" stroke="#9aa9bc" stroke-width="2"/>
   </g>
 
   <g transform="translate(923 125)">
