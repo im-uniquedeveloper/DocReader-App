@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths>
+    <!-- Documents are copied here before being handed to the Android Sharesheet,
+         so the receiving app gets a URI it can actually read. -->
+    <cache-path name="shared" path="shared/" />
+</paths>

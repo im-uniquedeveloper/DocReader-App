@@ -1,0 +1,178 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=0.25, maximum-scale=6, user-scalable=yes">
+<style>
+  html, body { margin: 0; padding: 0; background: #e8e8ee; }
+  #container { padding: 10px 0 18px 0; }
+  /* docx-preview draws its own page boxes; give them a page-like shadow and
+     centre them, and stop the wrapper painting its own background. */
+  .docx-wrapper { background: transparent !important; padding: 0 !important; }
+  .docx-wrapper > section.docx {
+      box-shadow: 0 1px 5px rgba(0,0,0,0.28);
+      margin: 0 auto 14px auto;
+  }
+  #status {
+      font: 15px/1.5 -apple-system, Roboto, sans-serif;
+      padding: 28px 22px; color: #444; text-align: center;
+  }
+  #status.error { color: #b3261e; text-align: left; }
+</style>
+<script src="jszip.min.js"></script>
+<script src="docx-preview.min.js"></script>
+</head>
+<body>
+<div id="status">Rendering document&hellip;</div>
+<div id="container"></div>
+<script>
+(function () {
+  var status = document.getElementById('status');
+  var container = document.getElementById('container');
+
+  function fail(message) {
+    if (window.DocReader && window.DocReader.onError) {
+      // The app shows its own error card; don't say it twice.
+      status.style.display = 'none';
+      window.DocReader.onError(String(message));
+    } else {
+      status.className = 'error';
+      status.textContent = 'This document could not be rendered.\n\n' + message;
+    }
+  }
+
+  // A Word page is a fixed width (A4/Letter) and is wider than a phone viewport.
+  // Scale the rendered pages down so the document starts fit-to-width, matching the
+  // PDF viewer's default. Pinch zoom still works on top of this.
+  // The native side applies the fit-to-width zoom; see DocxWebView.kt for why the
+  // page cannot measure the screen itself. All we do is report our page width.
+  function pageWidthCss() {
+    var page = container.querySelector('section.docx') || container.querySelector('.docx');
+    return page ? Math.round(page.offsetWidth) : 0;
+  }
+
+  // Changing body zoom rescales the whole document, so an absolute scroll offset
+  // means something different afterwards — on rotation that lands the reader in
+  // blank space past the end. Keep the position relative instead.
+  // ---- page boundaries -------------------------------------------------
+  // docx-preview gives us one <section> per Word section, sized from sectPr.
+  // Its min-height IS the page height, so a section taller than that is holding
+  // several pages' worth of flowed content. Deriving boundaries from that real
+  // geometry is the closest honest approximation of page breaks this renderer can
+  // offer; it is NOT Word's pagination and is labelled as approximate in the UI.
+  var boundaries = [];
+  var totalPages = 0;
+  var lastReported = -1;
+
+  function recomputePages() {
+    boundaries = [];
+    var sections = container.querySelectorAll('section.docx');
+    var scrollY = window.scrollY || document.documentElement.scrollTop || 0;
+    for (var i = 0; i < sections.length; i++) {
+      var rect = sections[i].getBoundingClientRect();
+      var top = rect.top + scrollY;
+      var pageHeight = parseFloat(window.getComputedStyle(sections[i]).minHeight);
+      if (!pageHeight || pageHeight <= 0) pageHeight = rect.height;
+      var count = Math.max(1, Math.round(rect.height / pageHeight));
+      for (var p = 0; p < count; p++) boundaries.push(top + p * pageHeight);
+    }
+    totalPages = boundaries.length;
+    lastReported = -1;
+    reportPage();
+  }
+
+  function reportPage() {
+    if (!totalPages) return;
+    var y = (window.scrollY || document.documentElement.scrollTop || 0) +
+            (window.innerHeight || 0) * 0.25;
+    var page = 1;
+    for (var i = 0; i < boundaries.length; i++) {
+      if (boundaries[i] <= y) page = i + 1;
+    }
+    if (page !== lastReported && window.DocReader && window.DocReader.onPage) {
+      lastReported = page;
+      window.DocReader.onPage(page, totalPages);
+    }
+  }
+
+  var scrollScheduled = false;
+  window.addEventListener('scroll', function () {
+    if (scrollScheduled) return;
+    scrollScheduled = true;
+    requestAnimationFrame(function () { scrollScheduled = false; reportPage(); });
+  }, { passive: true });
+
+  window.__setZoom = function (z) {
+    var before = document.body.scrollHeight || 1;
+    var scrollY = window.scrollY || document.documentElement.scrollTop || 0;
+    var relative = scrollY / before;
+    document.body.style.zoom = z;
+    requestAnimationFrame(function () {
+      var after = document.body.scrollHeight || 1;
+      window.scrollTo(0, relative * after);
+      recomputePages();
+    });
+  };
+
+  // Word writes Symbol/Wingdings bullets as private-use characters. Those fonts are
+  // not on Android, so the glyphs arrive as tofu. Map the common ones to real
+  // characters in a font that exists.
+  var BULLETS = { '': '•', '': '▪', '': '➢', '': '●' };
+  function fixBullets(root) {
+    var walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null, false);
+    var node;
+    while ((node = walker.nextNode())) {
+      var text = node.nodeValue, replaced = text;
+      for (var ch in BULLETS) {
+        if (replaced.indexOf(ch) !== -1) replaced = replaced.split(ch).join(BULLETS[ch]);
+      }
+      if (replaced !== text) {
+        node.nodeValue = replaced;
+        if (node.parentElement) node.parentElement.style.fontFamily = 'sans-serif';
+      }
+    }
+  }
+
+  var lib = window.docx || window.docxPreview;
+  if (!lib || typeof lib.renderAsync !== 'function') {
+    fail('Renderer failed to load.');
+    return;
+  }
+
+  // 'document.bin' is served by the app from the content URI the user picked.
+  // Every other request is blocked by the WebViewClient, so nothing leaves the device.
+  fetch('document.bin')
+    .then(function (res) {
+      if (!res.ok) throw new Error('Could not read the file (HTTP ' + res.status + ').');
+      return res.arrayBuffer();
+    })
+    .then(function (buffer) {
+      return lib.renderAsync(buffer, container, null, {
+        inWrapper: true,
+        ignoreWidth: false,
+        ignoreHeight: false,
+        breakPages: true,
+        renderHeaders: true,
+        renderFooters: true,
+        renderFootnotes: true,
+        useBase64URL: true
+      });
+    })
+    .then(function () {
+      status.style.display = 'none';
+      fixBullets(container);
+      recomputePages();
+      var pages = container.querySelectorAll('section.docx').length;
+      var width = pageWidthCss();
+      console.log('rendered: pages=' + pages + ' pageWidth=' + width);
+      if (window.DocReader && window.DocReader.onRendered) {
+        window.DocReader.onRendered(pages, width);
+      }
+    })
+    .catch(function (e) {
+      fail((e && e.message) ? e.message : String(e));
+    });
+})();
+</script>
+</body>
+</html>
