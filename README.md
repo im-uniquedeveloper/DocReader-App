@@ -1,13 +1,13 @@
 # DocReader
 
-![DocReader project illustration showing PDF, DOCX, and XLSX documents](docs/images/docreader-overview.svg)
+![DocReader branding artwork showing PDF, DOCX, and XLSX documents](docs/images/docreader-banner.png)
 
 **DocReader** is an offline native Android app for opening and reading PDF, Word
 (`.docx`), and Excel (`.xlsx`) documents. It uses Jetpack Compose for the app UI,
 Android's Storage Access Framework for document access, and format-specific
 viewers for rendering.
 
-> The image above is a project illustration, not an in-app screenshot. The app
+> The image above is branding artwork, not an in-app screenshot. The app
 > does not currently include a captured emulator screenshot in this repository.
 
 ## Features
